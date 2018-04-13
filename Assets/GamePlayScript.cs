@@ -6,10 +6,15 @@ using UnityEngine.UI;
 public class GamePlayScript : MonoBehaviour {
 
 	public GameObject timerTextView;
+	public GameObject scoreTextView;
     public GameObject bazooka;
     public GameObject crossHair;
+	public GameObject enemies;
 
-	int gameTime = 300;
+	public ParticleSystem muzzleFlash;
+
+	int gameTime = 10;
+	int score = 0;
 
     AudioSource gunShotAudioSource;
     public AudioClip gunShotClip;
@@ -21,6 +26,7 @@ public class GamePlayScript : MonoBehaviour {
         Cursor.visible = false;
         gunShotAudioSource = gameObject.GetComponent<AudioSource>();
         InvokeRepeating ("TimeCounter", 0, 1);
+		scoreTextView.GetComponent<Text>().text = score.ToString ();
 
 	}
 
@@ -44,6 +50,10 @@ public class GamePlayScript : MonoBehaviour {
 
 	void GameOver ()
 	{
+		score = 0;
+		gameTime = 300;
+		Cursor.lockState = CursorLockMode.None;
+		Cursor.visible = true;
 		Application.LoadLevel ("game over");
 	}
 
@@ -84,11 +94,23 @@ public class GamePlayScript : MonoBehaviour {
         {
             Shoot();
         }
+
+
 	}
 
     void Shoot()
     {
         gunShotAudioSource.PlayOneShot(gunShotClip);
+		muzzleFlash.Emit (2);
+		Vector2 dir = new Vector2 (crossHair.transform.position.x, crossHair.transform.position.y);
+		RaycastHit2D hit = Physics2D.Raycast (Camera.main.transform.position, dir);
+		if (hit.collider != null && hit.collider.gameObject.tag == enemies.gameObject.tag) {
+			score++;
+			Destroy (hit.collider.gameObject);
+
+		}
+
+		scoreTextView.GetComponent<Text>().text = score.ToString ();
     }
 
 
